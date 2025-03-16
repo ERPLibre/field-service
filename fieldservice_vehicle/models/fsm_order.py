@@ -14,12 +14,13 @@ class FSMOrder(models.Model):
         "fsm.vehicle", string="Vehicle", default=_get_default_vehicle
     )
 
-    @api.model
-    def create(self, vals):
-        res = super(FSMOrder, self).create(vals)
-        if not vals.get("vehicle_id") and vals.get("person_id"):
-            self._onchange_person_id()
-        return res
+    @api.model_create_multi
+    def create(self, vals_list):
+        res_ids = super(FSMOrder, self).create(vals_list)
+        for rec in res_ids:
+            if not rec.vehicle_id and rec.person_id:
+                rec._onchange_person_id()
+        return res_ids
 
     @api.onchange("person_id")
     def _onchange_person_id(self):
